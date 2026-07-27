@@ -1,1 +1,1 @@
-# sarracenia_alata_ENMs
+# ENMs for eastern and western Sarracenia alata populations using GBIF data
