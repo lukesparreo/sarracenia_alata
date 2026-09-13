@@ -1,1 +1,1 @@
-# ENMs for eastern and western Sarracenia alata populations using GBIF data
+# Code for genome skimming data processing, plastome phylogeny construction, SNP maximum-likelihood phylogeny construction, gene retrieval and coalescent ASTRAL phylogeny construction, ENMs for eastern and western Sarracenia alata populations using GBIF data
