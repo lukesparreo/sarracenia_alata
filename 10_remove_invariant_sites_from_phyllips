@@ -1,0 +1,115 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_NAME 1024
+
+/*
+ *C script to remove invariant sites from PHYLIP alignments
+ *A site is retained if at least two different nucleotide states are observed among the sequences
+ */
+
+int main(int argc, char **argv) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s input.phy output.phy\n", argv[0]);
+        return 1;
+    }
+
+    FILE *in = fopen(argv[1], "r");
+    if (!in) {
+        perror("Input");
+        return 1;
+    }
+
+    FILE *out = fopen(argv[2], "w");
+    if (!out) {
+        perror("Output");
+        fclose(in);
+        return 1;
+    }
+
+    int n, len;
+
+    if (fscanf(in, "%d %d", &n, &len) != 2) {
+        fprintf(stderr, "Could not read PHYLIP header\n");
+        fclose(in);
+        fclose(out);
+        return 1;
+    }
+
+    char **names = malloc(n * sizeof(char *));
+    char **seqs = malloc(n * sizeof(char *));
+
+    for (int i = 0; i < n; i++) {
+        names[i] = malloc(MAX_NAME);
+        seqs[i] = malloc((size_t)len + 1);
+
+        if (fscanf(in, "%1023s", names[i]) != 1 ||
+            fscanf(in, "%s", seqs[i]) != 1) {
+            fprintf(stderr, "Could not read sequence data\n");
+            fclose(in);
+            fclose(out);
+            return 1;
+        }
+    }
+
+    fclose(in);
+
+    unsigned char *keep = calloc((size_t)len, sizeof(unsigned char));
+    long kept = 0;
+
+    fprintf(stderr, "Checking %d sites across %d sequences...\n", len, n);
+
+    for (int j = 0; j < len; j++) {
+        int seenA = 0;
+        int seenC = 0;
+        int seenG = 0;
+        int seenT = 0;
+
+        for (int i = 0; i < n; i++) {
+            char c = toupper((unsigned char)seqs[i][j]);
+
+            if (c == 'A') seenA = 1;
+            else if (c == 'C') seenC = 1;
+            else if (c == 'G') seenG = 1;
+            else if (c == 'T') seenT = 1;
+
+            if ((seenA + seenC + seenG + seenT) >= 2) {
+                keep[j] = 1;
+                kept++;
+                break;
+            }
+        }
+    }
+
+    fprintf(stderr,
+            "Keeping %ld variable sites; removing %ld invariant sites.\n",
+            kept, (long)len - kept);
+
+    fprintf(out, "%d %ld\n", n, kept);
+
+    for (int i = 0; i < n; i++) {
+        fprintf(out, "%-20s", names[i]);
+
+        for (int j = 0; j < len; j++) {
+            if (keep[j])
+                fputc(seqs[i][j], out);
+        }
+
+        fputc('\n', out);
+    }
+
+    fclose(out);
+
+    for (int i = 0; i < n; i++) {
+        free(names[i]);
+        free(seqs[i]);
+    }
+
+    free(names);
+    free(seqs);
+    free(keep);
+
+    return 0;
+}
