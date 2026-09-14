@@ -1,0 +1,43 @@
+#!/bin/bash
+#SBATCH --job-name=getorganelle
+#SBATCH --array=0-24%4
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --time=12:00:00
+#SBATCH --output=getorganelle_%A_%a.out
+#SBATCH --error=getorganelle_%A_%a.err
+
+# ------------------------------------------------------------
+#Plastid genome assembly from genome-skimming reads using GetOrganelle
+# ------------------------------------------------------------
+
+source ~/.conda/etc/profile.d/conda.sh
+conda activate getorganelle
+
+module load bowtie2/2.5.5
+
+#Replace with real sample IDs
+SAMPLES=(
+sample_1
+sample_2
+sample_3...
+)
+
+SAMPLE=${SAMPLES[$SLURM_ARRAY_TASK_ID]}
+
+echo "Starting ${SAMPLE}"
+echo "Date: $(date)"
+echo "Node: $(hostname)"
+
+#-F embplant_pt: default preset for land plant plastid genomes
+#-k 21,45,65,85,105: default GetOrganelle k-mer parameters
+get_organelle_from_reads.py \
+    -1 ${SAMPLE}/${SAMPLE}_R1.trimmed.fq.gz \
+    -2 ${SAMPLE}/${SAMPLE}_R2.trimmed.fq.gz \
+    -F embplant_pt \
+    -o ${SAMPLE}/${SAMPLE}_assembly \
+    -R 10 \
+    -k 21,45,65,85,105
+
+echo "Finished ${SAMPLE}"
+echo "Date: $(date)"
