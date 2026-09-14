@@ -7,9 +7,7 @@
 #SBATCH --output=getorganelle_%A_%a.out
 #SBATCH --error=getorganelle_%A_%a.err
 
-# ------------------------------------------------------------
 #Plastid genome assembly from genome-skimming reads using GetOrganelle
-# ------------------------------------------------------------
 
 source ~/.conda/etc/profile.d/conda.sh
 conda activate getorganelle
