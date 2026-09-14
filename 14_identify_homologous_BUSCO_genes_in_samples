@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --job-name=geneminer2_full
+#SBATCH --partition=defq
+#SBATCH --cpus-per-task=24
+#SBATCH --mem=128G
+#SBATCH --time=168:00:00
+#SBATCH --output=geneminer2_full_%j.out
+#SBATCH --error=geneminer2_full_%j.err
+
+set -euo pipefail
+
+#GeneMiner2 identifies and retrieves homologous sequences for the previously obtained BUSCO reference loci from genome-skimming samples
+#The software also optionally processes the recovered loci through filtering, assembly, consensus generation, trimming, concatenation, and gene-tree inference
+#(all steps typically required before coalescent phylogenetic inference with ASTRAL)
+
+cd "$SLURM_SUBMIT_DIR"
+
+geneminer2 \
+    -f sample_list.tsv \
+    -r reference_for_gene_miner/per_locus \
+    -o geneminer_output \
+    -p "$SLURM_CPUS_PER_TASK" \
+    -m coalescent \
+    --phylo-program iqtree \
+    filter refilter assemble consensus trim combine tree
