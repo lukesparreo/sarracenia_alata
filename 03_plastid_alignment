@@ -8,9 +8,8 @@
 
 set -euo pipefail
 
-# ------------------------------------------------------------
 #Concatenates assembled plastomes into a single multi-FASTA and aligns them with MAFFT
-# ------------------------------------------------------------
+
 INPUT="plastomes_for_mafft.fasta"
 OUTPUT="../04_plastid_check_and_phylogeny/plastomes_aligned.fasta"
 
