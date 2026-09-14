@@ -1,0 +1,48 @@
+#!/bin/bash
+#SBATCH --job-name=extract_geneminer_ref
+#SBATCH --partition=defq
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=8G
+#SBATCH --time=02:00:00
+#SBATCH --output=extract_geneminer_ref_%j.out
+#SBATCH --error=extract_geneminer_ref_%j.err
+
+set -euo pipefail
+
+#Extract previously identified single-copy BUSCO loci from the reference genome for use as GeneMiner reference sequences
+#Seqkit converts BUSCO genomic coordinates from BED format to FASTA (required input for next step)
+#(Seqkit was locally installed)
+
+SEQKIT="/path/to/seqkit"
+
+FULL_TABLE="busco_reference_output/Sarracenia_purpurea/run_eudicotyledons_odb12.2/full_table.tsv"
+REFERENCE="raw_assembly_indexing/Sarracenia_purpurea_GCA_051027295.1.fna"
+BED_OUT="single_copy_busco.bed"
+FASTA_OUT="single_copy_busco.fna"
+
+# Extract complete, single-copy BUSCO loci and convert their
+# 1-based inclusive coordinates to 0-based half-open BED format.
+
+awk -F'\t' '
+    $1 !~ /^#/ && $2 == "Complete" {
+        contig = $3
+        start  = $4
+        end    = $5
+        strand = $6
+
+        lo = (start < end) ? start : end
+        hi = (start < end) ? end : start
+
+        bed_start = lo - 1
+        bed_end   = hi
+
+        print contig "\t" bed_start "\t" bed_end "\t" $1 "\t.\t" strand
+    }
+' "$FULL_TABLE" > "$BED_OUT"
+
+"$SEQKIT" subseq \
+    --bed "$BED_OUT" \
+    "$REFERENCE" \
+    > "$FASTA_OUT"
+
+echo "Extracted $(grep -c '^>' "$FASTA_OUT") BUSCO reference sequences."
