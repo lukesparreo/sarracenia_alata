@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --job-name=vcf_to_phylip
+#SBATCH --partition=defq
+#SBATCH --cpus-per-task=64
+#SBATCH --mem=128G
+#SBATCH --time=72:00:00
+#SBATCH --output=plink_conversion_%j.out
+#SBATCH --error=plink_conversion_%j.err
+
+set -euo pipefail
+
+#PLINK2 converts filtered VCF files to PHYLIP format for downstream phylogenetic analyses
+#(PLINK2 was locally installed, change to local path)
+
+PLINK="/path/to/plink2"
+INPUT="../07_snp_filtering/new_filters"
+OUTPUT="plink_02"
+
+mkdir -p "$OUTPUT"
+
+for pct in 25 50 75
+do
+    VCF="$INPUT/filtered_${pct}pct_missing.vcf.gz"
+    OUT="$OUTPUT/filtered_${pct}pct_missing"
+
+    "$PLINK" \
+        --vcf "$VCF" \
+        --threads "$SLURM_CPUS_PER_TASK" \
+        --export phylip \
+        --out "$OUT"
+done
