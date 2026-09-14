@@ -9,10 +9,8 @@
 
 set -euo pipefail
 
-# ------------------------------------------------------------
 #Maps each sample's trimmed reads back to its own assembled plastome using BWA-MEM2
 #Next, summarizes read depth/coverage with samtools
-# ------------------------------------------------------------
 
 module load bwa-mem2/2.3
 module load samtools/1.24
