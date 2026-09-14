@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH --job-name=busco_ref
+#SBATCH --partition=defq
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH --time=24:00:00
+#SBATCH --output=busco_ref_%j.out
+#SBATCH --error=busco_ref_%j.err
+
+set -euo pipefail
+
+#Using BUSCO to identify conserved orthologs in the reference genome used in prior analyses
+#The resulting BUSCO genes will be used as references for GeneMiner extraction from our genome skimming data
+#Parameter input eudicotyledon tells BUSCO to search for genes present in eudicots (such as Sarracenia)
+#(BUSCO was locally installed)
+
+BUSCO="/path/to/busco"
+
+REFERENCE="reference/Sarracenia_purpurea_GCA_051027295.1.fna"
+OUTDIR="reference_busco"
+
+mkdir -p "$OUTDIR"
+
+"$BUSCO" \
+    -i "$REFERENCE" \
+    -l eudicotyledons_odb12.2 \
+    -m genome \
+    -o Sarracenia_purpurea \
+    --out_path "$OUTDIR" \
+    -c "$SLURM_CPUS_PER_TASK"
