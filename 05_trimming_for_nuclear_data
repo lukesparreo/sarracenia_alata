@@ -1,0 +1,81 @@
+#!/bin/bash
+#SBATCH --job-name=fastp_nuclear
+#SBATCH --output=fastp_nuclear_%A_%a.out
+#SBATCH --error=fastp_nuclear_%A_%a.err
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=32G
+#SBATCH --time=04:00:00
+
+set -euo pipefail
+
+#Adapter and quality trimming of paired-end genome-skimming reads using fastp.
+#For nuclear analysis, input FASTQ files were not concatenated across sequencing lanes until after this step
+
+cd "$SLURM_SUBMIT_DIR"
+
+module load fastp/1.3.6
+
+SAMPLES=(
+    sample_1
+    sample_2
+    sample_3
+    ...
+)
+
+MAX_JOBS=4
+
+process_sample() {
+
+    SAMPLE="$1"
+
+    mkdir -p "$SAMPLE/trimmed"
+
+    for R1 in "$SAMPLE"/*_1.fq.gz; do
+
+        R2="${R1/_1.fq.gz/_2.fq.gz}"
+
+        if [[ ! -f "$R2" ]]; then
+            echo "ERROR: Missing R2 for $R1"
+            return 1
+        fi
+
+        BASENAME=$(basename "$R1" _1.fq.gz)
+
+        OUT1="$SAMPLE/trimmed/${BASENAME}_1.trimmed.fq.gz"
+        OUT2="$SAMPLE/trimmed/${BASENAME}_2.trimmed.fq.gz"
+
+        HTML="$SAMPLE/trimmed/${BASENAME}_fastp.html"
+        JSON="$SAMPLE/trimmed/${BASENAME}_fastp.json"
+
+        fastp \
+            --in1 "$R1" \
+            --in2 "$R2" \
+            --out1 "$OUT1" \
+            --out2 "$OUT2" \
+            --thread 4 \
+            --detect_adapter_for_pe \
+            --qualified_quality_phred 20 \
+            --length_required 30 \
+            --html "$HTML" \
+            --json "$JSON"
+
+    done
+}
+
+running=0
+
+for SAMPLE in "${SAMPLES[@]}"; do
+
+    process_sample "$SAMPLE" &
+
+    ((running+=1))
+
+    if [[ "$running" -ge "$MAX_JOBS" ]]; then
+        wait
+        running=0
+    fi
+
+done
+
+wait
+```
