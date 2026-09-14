@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --job-name=index_ref
+#SBATCH --output=index_reference_%j.out
+#SBATCH --error=index_reference_%j.err
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --time=02:00:00
+
+set -euo pipefail
+
+#Indexing publicly available Sarracenia reference (Alabady et al., 2026) using BWA-mem2
+
+module load bwa-mem2
+
+cd "$SLURM_SUBMIT_DIR/reference"
+
+REFERENCE="Sarracenia_purpurea_GCA_051027295.1.fna"
+
+echo "Indexing reference:"
+echo "$REFERENCE"
+date
+
+bwa-mem2 index "$REFERENCE"
+
+echo "Reference indexing complete."
+date
