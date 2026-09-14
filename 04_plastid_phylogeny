@@ -8,6 +8,8 @@
 
 set -euo pipefail
 
+#Creating phylogeny with IQTREE v3.1.3 using whole plastid data (in our analysis, 18/19 samples had circular plastomes recovered)
+
 cd "$SLURM_SUBMIT_DIR"
 
 module load iqtree/3.1.3
