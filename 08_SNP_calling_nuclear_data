@@ -1,0 +1,48 @@
+#!/bin/bash
+#SBATCH --job-name=snp_call
+#SBATCH --partition=defq
+#SBATCH --cpus-per-task=14
+#SBATCH --mem=128G
+#SBATCH --time=400:00:00
+#SBATCH --output=snp_calling_%j.out
+#SBATCH --error=snp_calling_%j.err
+
+set -euo pipefail
+
+#SNP calling from nuclear genome-skimming data
+#Bcftools uses joint pileup to call variants relative to the reference, indexes, and writes variant statistics
+#Samtools indexes the reference genome
+
+module load bcftools
+module load samtools
+
+REF="../../reference/Sarracenia_purpurea_GCA_051027295.1.fna"
+BAMDIR="mapped"
+OUT="."
+
+# Create BAM list
+find "$BAMDIR" -name "*.sorted.bam" | sort > "$OUT/bamlist.txt"
+
+# Create reference index if needed
+if [[ ! -f "${REF}.fai" ]]; then
+    samtools faidx "$REF"
+fi
+
+# Joint pileup and SNP calling
+bcftools mpileup \
+    -f "$REF" \
+    -b "$OUT/bamlist.txt" \
+    -Ou \
+    --threads "$SLURM_CPUS_PER_TASK" \
+    | bcftools call \
+    -mv \
+    -Oz \
+    -o "$OUT/raw_variants.vcf.gz"
+
+# Index raw VCF
+bcftools index -t "$OUT/raw_variants.vcf.gz"
+
+# Generate variant statistics
+bcftools stats \
+    "$OUT/raw_variants.vcf.gz" \
+    > "$OUT/raw_variants.stats.txt"
