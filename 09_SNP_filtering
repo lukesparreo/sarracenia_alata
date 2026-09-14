@@ -1,0 +1,77 @@
+#!/bin/bash
+#SBATCH --job-name=snp_filter_new
+#SBATCH --output=snp_filter_new_%j.out
+#SBATCH --error=snp_filter_new_%j.err
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --time=02:00:00
+
+set -euo pipefail
+
+#SNP filtering from nuclear genome-skimming data using Bcftools
+#Descriptions of filters available in manuscript methods section
+
+module load bcftools
+
+INPUT="raw_variants.vcf.gz"
+OUTDIR="new_filters"
+
+mkdir -p "$OUTDIR"
+
+#Remove indels, retain QUAL >= 30, set genotypes with total AD < 20 to missing, and retain variants with MAF >= 0.05
+
+bcftools view \
+    -v snps \
+    -i 'QUAL>=30' \
+    "$INPUT" \
+    -Ou \
+| bcftools +setGT \
+    -Ou \
+    -- \
+    -t q \
+    -n . \
+    -i 'FMT/AD[:0]+FMT/AD[:1]<20' \
+| bcftools view \
+    -i 'MAF>=0.05' \
+    -Oz \
+    -o "$OUTDIR/quality_filtered.vcf.gz"
+
+bcftools index -t "$OUTDIR/quality_filtered.vcf.gz"
+
+#Generate three datasets with maximum missingness thresholds of 25%, 50%, and 75% for later comparison
+
+bcftools view \
+    -i 'F_MISSING<=0.25' \
+    -Oz \
+    -o "$OUTDIR/filtered_25pct_missing.vcf.gz" \
+    "$OUTDIR/quality_filtered.vcf.gz"
+
+bcftools index -t "$OUTDIR/filtered_25pct_missing.vcf.gz"
+
+bcftools view \
+    -i 'F_MISSING<=0.50' \
+    -Oz \
+    -o "$OUTDIR/filtered_50pct_missing.vcf.gz" \
+    "$OUTDIR/quality_filtered.vcf.gz"
+
+bcftools index -t "$OUTDIR/filtered_50pct_missing.vcf.gz"
+
+bcftools view \
+    -i 'F_MISSING<=0.75' \
+    -Oz \
+    -o "$OUTDIR/filtered_75pct_missing.vcf.gz" \
+    "$OUTDIR/quality_filtered.vcf.gz"
+
+bcftools index -t "$OUTDIR/filtered_75pct_missing.vcf.gz"
+
+#Report SNP counts per dataset
+
+for VCF in \
+    "$OUTDIR/quality_filtered.vcf.gz" \
+    "$OUTDIR/filtered_25pct_missing.vcf.gz" \
+    "$OUTDIR/filtered_50pct_missing.vcf.gz" \
+    "$OUTDIR/filtered_75pct_missing.vcf.gz"
+do
+    echo -n "$(basename "$VCF"): "
+    bcftools index -n "$VCF"
+done
