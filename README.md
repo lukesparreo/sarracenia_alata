@@ -1,4 +1,4 @@
-# Code for genome skimming data processing, plastome phylogeny construction, SNP maximum-likelihood phylogeny construction, gene retrieval and coalescent ASTRAL phylogeny construction, ENMs for eastern and western Sarracenia alata populations using GBIF data
+# Code for the project "Population genetic structure and biogeographic disjunction do not necessarily signal speciation: a case study in the North American pitcher plant Sarracenia alata"
 
 01 through 04 extract and prepare chloroplast data from raw genome-skims for maximum-likelihood phylogenetic inference
 
