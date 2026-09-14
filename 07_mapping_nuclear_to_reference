@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH --job-name=map_nucl
+#SBATCH --partition=defq
+#SBATCH --array=0-18%4
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --time=48:00:00
+#SBATCH --output=map_nuclear_%A_%a.out
+#SBATCH --error=map_nuclear_%A_%a.err
+
+set -euo pipefail
+
+#Map genome-skimming reads to the indexed reference genome using BWA-MEM2
+#and generate sorted and indexed BAM files using SAMtools.
+
+module load bwa-mem2
+module load samtools
+
+INPUT="combined"
+OUTPUT="mapped"
+REF="reference/Sarracenia_purpurea_GCA_051027295.1.fna"
+
+mkdir -p "$OUTPUT"
+
+# Get sorted list of trimmed R1 files
+R1_FILES=($(find "$INPUT" -name "*_R1.trimmed.fq.gz" | sort))
+
+R1="${R1_FILES[$SLURM_ARRAY_TASK_ID]}"
+SAMPLE=$(basename "$R1" _R1.trimmed.fq.gz)
+R2="$INPUT/${SAMPLE}_R2.trimmed.fq.gz"
+
+if [[ ! -f "$R2" ]]; then
+    echo "ERROR: Missing R2 for $SAMPLE"
+    exit 1
+fi
+
+bwa-mem2 mem \
+    -t "$SLURM_CPUS_PER_TASK" \
+    "$REF" \
+    "$R1" \
+    "$R2" \
+    | samtools sort \
+    -@ "$SLURM_CPUS_PER_TASK" \
+    -o "$OUTPUT/${SAMPLE}.sorted.bam" -
+
+samtools index "$OUTPUT/${SAMPLE}.sorted.bam"
