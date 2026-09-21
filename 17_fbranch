@@ -1,0 +1,6 @@
+#!/bin/bash
+
+Dsuite Fbranch \
+    sarracenia_fbranch_tree.nwk \
+    sarracenia_dtrios_tree.txt \
+    > sarracenia_fbranch.txt
