@@ -1,1 +1,35 @@
+#!/bin/bash
+#SBATCH --job-name=astral
+#SBATCH --partition=defq
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --time=24:00:00
+#SBATCH --output=astral_%j.out
+#SBATCH --error=astral_%j.err
 
+set -euo pipefail
+
+cd "$SLURM_SUBMIT_DIR"
+
+# Activate ASTRAL environment
+source /cm/shared/apps/miniconda/26.5.3-2/etc/profile.d/conda.sh
+conda activate astral
+
+echo "ASTRAL version:"
+astral --help | head -3
+
+# GeneMiner gene-tree input
+INPUT="../11_geneminer_busco/geneminer_gene_trees.tre"
+
+# ASTRAL output
+OUTPUT="sarracenia_astral.tre"
+
+echo "Input:  $INPUT"
+echo "Output: $OUTPUT"
+
+astral \
+    -i "$INPUT" \
+    -o "$OUTPUT"
+
+echo "ASTRAL finished."
+echo "Species tree: $OUTPUT"
