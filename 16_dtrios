@@ -1,0 +1,11 @@
+#!/bin/bash
+
+Dsuite Dtrios \
+    -t sarracenia_tree.nwk \
+    -o sarracenia_dtrios \
+    filtered_50pct_missing.vcf.gz \
+    sarracenia_sets.txt
+
+#sarracenia_tree.nwk uses the given topology (Outgroup, (east of Pascagoula, (west of Pascagoula and east of Mississippi, west of Mississippi))) based on the clades recovered by the multispecies coalescent model
+#filtered_50pct_missing.vcf.gz is the same SNP dataset used to create the presented maximum likelihood tree
+#sarracenia_sets.txt categorizes the 19 samples into 1 of the 4 groups in the topology above based on geography
