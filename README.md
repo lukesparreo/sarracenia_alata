@@ -6,4 +6,6 @@
 
 12 through 15 identifies and assembles BUSCO (Benchmarking Universal Single-Copy Orthologs) genes from raw genome-skims for coalescent phylogenetic inference
 
+16 and 17 use the Dsuite software to estimate excess allele sharing (used to predict potential gene flow) between distinct clades of Sarracenia alata given the coalescent phylogeny's topology
+
 ENMs.R uses GBIF data to construct and evaluate environmental niche models for eastern and western lineages of Sarracenia alata, as well as conduct statistical comparisons on the best-constructed niche models
