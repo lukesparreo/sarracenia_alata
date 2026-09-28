@@ -50,71 +50,30 @@ hull_ea_east     <- project(hull_vect_east, "EPSG:6933")
 hull_buf_ea_east <- buffer(hull_ea_east, width = 111320)
 hull_buf_east    <- project(hull_buf_ea_east, "EPSG:4326")
 
-#Get a representative point inside each buffered study region to pick the right tile
-centroid_west <- geom(centroids(hull_buf_west))
-centroid_east <- geom(centroids(hull_buf_east))
+#Select study tiles for variables
+bio_tile_west1 <- worldclim_tile(var = "bio", lon = -95, lat = 35, path = "climate")  #north row
+bio_tile_west2 <- worldclim_tile(var = "bio", lon = -95, lat = 25, path = "climate")  #south row
 
-bio_tile_west1 <- worldclim_tile(
-  var  = "bio",
-  lon  = centroid_west[, "x"],
-  lat  = 35,    
-  path = "climate"
-)
-
-bio_tile_west2 <- worldclim_tile(
-  var  = "bio",
-  lon  = centroid_west[, "x"],
-  lat  = 25,     
-  path = "climate"
-)
-
-bio_tile_east1 <- worldclim_tile(
-  var  = "bio",
-  lon  = -91,
-  lat  = centroid_east[, "y"],
-  path = "climate"
-)
-
-bio_tile_east2 <- worldclim_tile(
-  var  = "bio",
-  lon  = -89,
-  lat  = centroid_east[, "y"],
-  path = "climate"
-)
-
-bio_tile_east <- mosaic(bio_tile_east1, bio_tile_east2)
 bio_tile_west <- mosaic(bio_tile_west1, bio_tile_west2)
 
-elev_tile_west1 <- worldclim_tile(
-  var  = "elev",
-  lon  = centroid_west[, "x"],
-  lat  = 35,
-  path = "climate"
-)
-
-elev_tile_west2 <- worldclim_tile(
-  var  = "elev",
-  lon  = centroid_west[, "x"],
-  lat  = 25,
-  path = "climate"
-)
-
-elev_tile_east1 <- worldclim_tile(
-  var  = "elev",
-  lon  = -91,
-  lat  = centroid_east[, "y"],
-  path = "climate"
-)
-
-elev_tile_east2 <- worldclim_tile(
-  var  = "elev",
-  lon  = -89,
-  lat  = centroid_east[, "y"],
-  path = "climate"
-)
+elev_tile_west1 <- worldclim_tile(var = "elev", lon = -95, lat = 35, path = "climate")
+elev_tile_west2 <- worldclim_tile(var = "elev", lon = -95, lat = 25, path = "climate")
 
 elev_tile_west <- mosaic(elev_tile_west1, elev_tile_west2)
-elev_tile_east <- mosaic(elev_tile_east1, elev_tile_east2)
+
+bio_tile_east_nw <- worldclim_tile(var = "bio", lon = -91, lat = 35, path = "climate")  #north, west column
+bio_tile_east_ne <- worldclim_tile(var = "bio", lon = -89, lat = 35, path = "climate")  #north, east column
+bio_tile_east_sw <- worldclim_tile(var = "bio", lon = -91, lat = 25, path = "climate")  #south, west column
+bio_tile_east_se <- worldclim_tile(var = "bio", lon = -89, lat = 25, path = "climate")  #south, east column
+
+bio_tile_east <- mosaic(bio_tile_east_nw, bio_tile_east_ne, bio_tile_east_sw, bio_tile_east_se)
+
+elev_tile_east_nw <- worldclim_tile(var = "elev", lon = -91, lat = 35, path = "climate")
+elev_tile_east_ne <- worldclim_tile(var = "elev", lon = -89, lat = 35, path = "climate")
+elev_tile_east_sw <- worldclim_tile(var = "elev", lon = -91, lat = 25, path = "climate")
+elev_tile_east_se <- worldclim_tile(var = "elev", lon = -89, lat = 25, path = "climate")
+
+elev_tile_east <- mosaic(elev_tile_east_nw, elev_tile_east_ne, elev_tile_east_sw, elev_tile_east_se)
 
 #Country outlines for plotting
 countries  <- ne_countries(scale = "medium", returnclass = "sf")
