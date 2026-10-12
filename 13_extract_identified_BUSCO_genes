@@ -20,9 +20,6 @@ REFERENCE="raw_assembly_indexing/Sarracenia_purpurea_GCA_051027295.1.fna"
 BED_OUT="single_copy_busco.bed"
 FASTA_OUT="single_copy_busco.fna"
 
-# Extract complete, single-copy BUSCO loci and convert their
-# 1-based inclusive coordinates to 0-based half-open BED format.
-
 awk -F'\t' '
     $1 !~ /^#/ && $2 == "Complete" {
         contig = $3
